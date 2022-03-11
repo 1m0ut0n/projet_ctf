@@ -7,7 +7,7 @@
 // Nombre de minutes max affichées dans la selection du temps
 // (Ne pas allez au dessus de 99, l'affichage n'est pas géré pour
 // les nombre à trois chiffre)
-#define MAX_MINUTES 10
+#define MAX_MINUTES 15
 
 // Decompte pour depart de la partie, 0 si pas de decompte
 // (Ne pas allez au dessus de 99, l'affichage n'est pas géré pour
