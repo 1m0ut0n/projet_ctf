@@ -35,6 +35,10 @@
 #define BUZZER 11
 // On peut donc utiliser le 11 pour le buzzer lui même
 
+// Si le bouton rouge à été remplacé par un bouton vert
+// (on à pas trouvé de boutons rouges)
+#define VERT_AU_LIEU_DE_ROUGE
+
 //Sons du Buzzer
 #define BIP_SOUND_FREQUENCY 220 // Bip de selection (220)
 #define BIP_SOUND_DURATION 9 // (9)
@@ -429,7 +433,11 @@ unsigned short capture(unsigned char pinBouton, unsigned char pinLed, unsigned c
 
 	lcd.clear();
 	if (pinBouton == RED_BUTTON) {
+		#ifdef VERT_AU_LIEU_DE_ROUGE
+		lcd.print(" Vert :     :");
+		#else
 		lcd.print(" Rouge :    :");
+		#endif
 		tempsCouleurInitial = captureRouge;
 	}
 	else if (pinBouton == BLUE_BUTTON) {
@@ -569,7 +577,11 @@ void finPartie(unsigned char pinBouton, unsigned char pinLed, unsigned char pinA
 	lcd.print("Drapeau capturee");
 	lcd.setCursor(0, 1);
 	lcd.print("  Equipe ");
+	#ifdef VERT_AU_LIEU_DE_ROUGE
+	if (pinLed == RED_LED) lcd.print("Vert");
+	#else
 	if (pinLed == RED_LED) lcd.print("Rouge");
+	#endif
 	else if (pinLed == BLUE_LED) lcd.print("Bleue");
 
 	// Animation son et LEDs
@@ -632,7 +644,11 @@ void finPartie(unsigned char pinBouton, unsigned char pinLed, unsigned char pinA
 	// Affichage du texte
 	lcd.clear();
 	lcd.print("Gagnant : ");
+	#ifdef VERT_AU_LIEU_DE_ROUGE
+	if (pinLed == RED_LED) lcd.print(" Verts");
+	#else
 	if (pinLed == RED_LED) lcd.print("Rouges");
+	#endif
 	else if (pinLed == BLUE_LED) lcd.print(" Bleus");
 	lcd.setCursor(0, 1);lcd.setCursor(0, 1);
 	lcd.print("   h   min   s");
