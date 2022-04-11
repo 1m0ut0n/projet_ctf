@@ -35,6 +35,12 @@
 #define BUZZER 11
 // On peut donc utiliser le 11 pour le buzzer lui même
 
+// Si on ne veut pas de la sirène, on peut n'utiliser que le buzzer
+//#define ONLY_BUZZER
+
+// Pin de la sirène
+#define SIRENE 8
+
 // Si le bouton rouge à été remplacé par un bouton vert
 // (on à pas trouvé de boutons rouges)
 #define VERT_AU_LIEU_DE_ROUGE
@@ -56,7 +62,7 @@
 #define RESET_TIMEOUT 24
 
 // Delai anti-rebont boutons
-#define ANTI_REBONT 75
+#define ANTI_REBONT 200
 
 // Creation de l'objet lcd
 LiquidCrystal lcd(LCD_RS, LCD_EN, LCD_D4, LCD_D5, LCD_D6, LCD_D7);
@@ -463,6 +469,77 @@ unsigned short capture(unsigned char pinBouton, unsigned char pinLed, unsigned c
 		// On calcule les millisecondes pour l'affichage
 		milliseconde = intervalleTemps%1000;
 
+		// Dans le cas ou on voudrait utiliser la sirène -------------------------
+		#ifndef ONLY_BUZZER
+
+		// Animation de LEDs et sons
+		if (!finTresProche) { // Si le temps est superieur à 10 sec
+			if (!finProche) { // Si le temps restant est superieur à 30 sec
+
+				// Si on est à 30 sec, on active le mode finProche
+				if (min <= 0 && sec <= 30) finProche = true;
+
+				// On regarde dans quelle partie de la seconde on est
+				tranche1 = milliseconde < 500;
+
+				// Lorsqu'on est dans la première moitié d'une seconde, la LED
+				// va s'allumer et le buzzer emmetre un son. La LED s'eteindra
+				// dans la deuxième partie de la seconde.
+				if (!active && tranche1) {
+					digitalWrite(pinAutreLed, HIGH); // On allume l'autre LED
+					digitalWrite(SIRENE, HIGH); // On fait un son
+					active = true;
+				}
+				else if (active && !tranche1) {
+					digitalWrite(pinAutreLed, LOW); // On eteind l'autre LED
+					digitalWrite(SIRENE, LOW); // On arrete le son
+					active = false;
+				}
+			}
+			else { // Fin Proche
+
+				// Si on est à 10 sec, on active le mode finProche
+				if (sec <= 10) finTresProche = true;
+
+				// On regarde dans quelle partie de la seconde on est
+				tranche1 = milliseconde < 150;
+				tranche2 = milliseconde < 500 && milliseconde > 350;
+
+				// Meme principe que ci dessus mais le nombre de bip et le timing change
+				if (!active && (tranche1 || tranche2)) { // Lors des secondes paires
+					digitalWrite(pinAutreLed, HIGH); // On allume l'autre LED
+					digitalWrite(SIRENE, HIGH); // On fait un son
+					active = true;
+				}
+				else if (active && (!tranche1 || !tranche2)) {
+					digitalWrite(pinAutreLed, LOW); // On eteind l'autre LED
+					digitalWrite(SIRENE, LOW); // On arrete le son
+					active = false;
+				}
+			}
+		}
+		else { // FinTresProche
+			// On regarde dans quelle partie de la seconde on est
+			tranche1 = milliseconde < 150;
+			tranche2 = milliseconde < 450 && milliseconde > 300;
+			tranche3 = milliseconde > 600 && milliseconde < 750;
+
+			// Meme principe que ci dessus mais le nombre de bip et le timing change
+			if (!active && (tranche1 || tranche2 || tranche3)) { // Lors des secondes paires
+				digitalWrite(pinAutreLed, HIGH); // On allume l'autre LED
+				digitalWrite(SIRENE, HIGH); // On fait un son
+				active = true;
+			}
+			else if (active && (!tranche1 || !tranche2 || !tranche3)) {
+				digitalWrite(pinAutreLed, LOW); // On eteind l'autre LED
+				digitalWrite(SIRENE, LOW); // On arrete le son
+				active = false;
+			}
+		}
+
+		// Dans le cas ou on ne voudrait utiliser que le buzzer -------------------
+		#else
+
 		// Animation de LEDs et sons
 		if (!finTresProche) { // Si le temps est superieur à 10 sec
 			if (!finProche) { // Si le temps restant est superieur à 30 sec
@@ -524,6 +601,9 @@ unsigned short capture(unsigned char pinBouton, unsigned char pinLed, unsigned c
 				active = false;
 			}
 		}
+
+		// Fin des cas particuliers -----------------------------------------------
+		#endif
 
 	} while (digitalRead(pinBouton)); // On continu tant qu'on ne relache pas le bouton
 	delay(ANTI_REBONT); // Pour eviter des problèmes
